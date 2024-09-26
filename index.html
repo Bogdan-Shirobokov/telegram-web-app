@@ -21,15 +21,31 @@
   <button onclick="sendResults()">Отправить данные боту</button>
   
   <script>
-    var s = new Speedtest();
+    var s;
+
+    window.onload = function() {
+      try {
+        // Проверяем, загружен ли скрипт и создаём объект Speedtest
+        s = new Speedtest();
+        console.log("Speedtest загружен и готов к использованию.");
+      } catch (error) {
+        console.error("Ошибка при загрузке библиотеки Speedtest:", error);
+      }
+    };
 
     s.onupdate = function(data) {
+      console.log("Обновление данных:", data);
       document.getElementById("download").textContent = (data.download || 0).toFixed(2);
       document.getElementById("upload").textContent = (data.upload || 0).toFixed(2);
       document.getElementById("ping").textContent = (data.ping || 0).toFixed(2);
     };
 
     function startTest() {
+      if (!s) {
+        console.error("Speedtest не инициализирован.");
+        return;
+      }
+      console.log("Тест скорости начат...");
       s.start();
     }
 
@@ -39,9 +55,9 @@
         upload: document.getElementById("upload").textContent,
         ping: document.getElementById("ping").textContent
       };
+      console.log("Отправка данных боту:", results);
       Telegram.WebApp.sendData(JSON.stringify(results)); // Отправка данных обратно в Telegram бота
     }
   </script>
 </body>
 </html>
-
