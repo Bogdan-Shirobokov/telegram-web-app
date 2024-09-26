@@ -60,12 +60,24 @@
     button:hover {
       background-color: #0056b3;
     }
+    select {
+      margin-top: 15px;
+      padding: 10px;
+      font-size: 18px;
+    }
   </style>
 </head>
 <body>
   <h1>Игра "Крестики-нолики"</h1>
-  
-  <div class="grid">
+
+  <label for="difficulty">Выберите уровень сложности:</label>
+  <select id="difficulty">
+    <option value="easy">Легкий</option>
+    <option value="medium">Средний</option>
+    <option value="hard">Сложный</option>
+  </select>
+
+  <div class="grid" id="grid">
     <div class="cell" id="cell-0" onclick="makeMove(0)"></div>
     <div class="cell" id="cell-1" onclick="makeMove(1)"></div>
     <div class="cell" id="cell-2" onclick="makeMove(2)"></div>
@@ -78,7 +90,7 @@
   </div>
 
   <div class="message" id="message">Ход X</div>
-  
+
   <button onclick="resetGame()">Начать заново</button>
   <button onclick="sendResults()">Отправить результат боту</button>
   
@@ -86,6 +98,7 @@
     let board = ['', '', '', '', '', '', '', '', ''];
     let currentPlayer = 'X';
     let gameActive = true;
+    let opponent = 'O'; // ИИ будет играть за "O"
 
     const winConditions = [
       [0, 1, 2],
@@ -103,8 +116,11 @@
         board[index] = currentPlayer;
         document.getElementById(`cell-${index}`).textContent = currentPlayer;
         checkWinner();
-        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-        document.getElementById('message').textContent = `Ход ${currentPlayer}`;
+        if (gameActive && currentPlayer === 'X') {
+          currentPlayer = 'O';
+          document.getElementById('message').textContent = `Ход ${currentPlayer}`;
+          setTimeout(makeAIMove, 500); // ИИ делает ход через 500мс
+        }
       }
     }
 
@@ -146,6 +162,101 @@
     function sendResults() {
       let result = document.getElementById('message').textContent;
       Telegram.WebApp.sendData(result); // Отправка результата боту
+    }
+
+    // Ходы ИИ в зависимости от уровня сложности
+    function makeAIMove() {
+      const difficulty = document.getElementById('difficulty').value;
+      let move;
+      
+      if (difficulty === 'easy') {
+        move = getRandomMove();
+      } else if (difficulty === 'medium') {
+        move = getMediumMove();
+      } else {
+        move = getBestMove();
+      }
+
+      if (move !== undefined && board[move] === '') {
+        board[move] = opponent;
+        document.getElementById(`cell-${move}`).textContent = opponent;
+        checkWinner();
+        currentPlayer = 'X';
+        document.getElementById('message').textContent = `Ход ${currentPlayer}`;
+      }
+    }
+
+    function getRandomMove() {
+      const emptyCells = board.map((cell, index) => cell === '' ? index : null).filter(index => index !== null);
+      return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    }
+
+    function getMediumMove() {
+      // Стратегия среднего уровня: блокировать ход игрока или сделать случайный ход
+      for (let i = 0; i < winConditions.length; i++) {
+        const [a, b, c] = winConditions[i];
+        if (board[a] === 'X' && board[b] === 'X' && board[c] === '') return c;
+        if (board[a] === 'X' && board[c] === 'X' && board[b] === '') return b;
+        if (board[b] === 'X' && board[c] === 'X' && board[a] === '') return a;
+      }
+      return getRandomMove();
+    }
+
+    function getBestMove() {
+      // Алгоритм минимакс для сложного уровня
+      const bestMove = minimax(board, opponent);
+      return bestMove.index;
+    }
+
+    function minimax(newBoard, player) {
+      const availSpots = newBoard.map((cell, index) => cell === '' ? index : null).filter(index => index !== null);
+      if (checkWin(newBoard, 'X')) return { score: -10 };
+      if (checkWin(newBoard, 'O')) return { score: 10 };
+      if (availSpots.length === 0) return { score: 0 };
+
+      const moves = [];
+      for (let i = 0; i < availSpots.length; i++) {
+        const move = {};
+        move.index = availSpots[i];
+        newBoard[availSpots[i]] = player;
+        if (player === 'O') {
+          const result = minimax(newBoard, 'X');
+          move.score = result.score;
+        } else {
+          const result = minimax(newBoard, 'O');
+          move.score = result.score;
+        }
+        newBoard[availSpots[i]] = '';
+        moves.push(move);
+      }
+
+      let bestMove;
+      if (player === 'O') {
+        let bestScore = -10000;
+        for (let i = 0; i < moves.length; i++) {
+          if (moves[i].score > bestScore) {
+            bestScore = moves[i].score;
+            bestMove = i;
+          }
+        }
+      } else {
+        let bestScore = 10000;
+        for (let i = 0; i < moves.length; i++) {
+          if (moves[i].score < bestScore) {
+            bestScore = moves[i].score;
+            bestMove = i;
+          }
+        }
+      }
+      return moves[bestMove];
+    }
+
+    function checkWin(board, player) {
+      for (let i = 0; i < winConditions.length; i++) {
+        const [a, b, c] = winConditions[i];
+        if (board[a] === player && board[b] === player && board[c] === player) return true;
+      }
+      return false;
     }
   </script>
 </body>
