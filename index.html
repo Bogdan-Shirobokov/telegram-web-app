@@ -3,61 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Проверка скорости</title>
+  <title>Тест скорости от Fast.com</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
     #results { margin-top: 20px; }
   </style>
-  <script src="https://librespeed.org/librespeed/speedtest.js"></script>
-</head>
-<body>
-  <h1>Тест скорости интернета</h1>
-  <button onclick="startTest()">Начать тест</button>
-  <div id="results">
-    <p>Скорость скачивания: <span id="download">-</span> Мбит/с</p>
-    <p>Скорость загрузки: <span id="upload">-</span> Мбит/с</p>
-    <p>Пинг: <span id="ping">-</span> мс</p>
-  </div>
-  <button onclick="sendResults()">Отправить данные боту</button>
-  
   <script>
-    var s;
-
-    window.onload = function() {
-      try {
-        // Проверяем, загружен ли скрипт и создаём объект Speedtest
-        s = new Speedtest();
-        console.log("Speedtest загружен и готов к использованию.");
-      } catch (error) {
-        console.error("Ошибка при загрузке библиотеки Speedtest:", error);
-      }
-    };
-
-    s.onupdate = function(data) {
-      console.log("Обновление данных:", data);
-      document.getElementById("download").textContent = (data.download || 0).toFixed(2);
-      document.getElementById("upload").textContent = (data.upload || 0).toFixed(2);
-      document.getElementById("ping").textContent = (data.ping || 0).toFixed(2);
-    };
-
-    function startTest() {
-      if (!s) {
-        console.error("Speedtest не инициализирован.");
-        return;
-      }
-      console.log("Тест скорости начат...");
-      s.start();
+    async function startTest() {
+      const response = await fetch("https://api.fast.com/netflix/speedtest/v2", {
+        method: "GET"
+      });
+      const data = await response.json();
+      const downloadSpeed = (data.download / 1_000_000).toFixed(2); // Мбит/с
+      document.getElementById("download").textContent = downloadSpeed + ' Мбит/с';
     }
 
     function sendResults() {
       var results = {
-        download: document.getElementById("download").textContent,
-        upload: document.getElementById("upload").textContent,
-        ping: document.getElementById("ping").textContent
+        download: document.getElementById("download").textContent
       };
-      console.log("Отправка данных боту:", results);
       Telegram.WebApp.sendData(JSON.stringify(results)); // Отправка данных обратно в Telegram бота
     }
   </script>
+</head>
+<body>
+  <h1>Проверка скорости от Fast.com</h1>
+  <button onclick="startTest()">Начать тест</button>
+  <div id="results">
+    <p>Скорость скачивания: <span id="download">-</span></p>
+  </div>
+  <button onclick="sendResults()">Отправить данные боту</button>
 </body>
 </html>
