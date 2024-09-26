@@ -3,35 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Тест скорости от Fast.com</title>
+  <title>Тест скорости интернета</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
     #results { margin-top: 20px; }
   </style>
+  <!-- Подключение библиотеки LibreSpeed -->
+  <script src="https://librespeed.org/librespeed/speedtest.js"></script>
+</head>
+<body>
+  <h1>Проверка скорости интернета</h1>
+  <button onclick="startTest()">Начать тест</button>
+  <div id="results">
+    <p>Скорость скачивания: <span id="download">-</span> Мбит/с</p>
+    <p>Скорость загрузки: <span id="upload">-</span> Мбит/с</p>
+    <p>Пинг: <span id="ping">-</span> мс</p>
+  </div>
+  <button onclick="sendResults()">Отправить данные боту</button>
+  
   <script>
-    async function startTest() {
-      const response = await fetch("https://api.fast.com/netflix/speedtest/v2", {
-        method: "GET"
-      });
-      const data = await response.json();
-      const downloadSpeed = (data.download / 1_000_000).toFixed(2); // Мбит/с
-      document.getElementById("download").textContent = downloadSpeed + ' Мбит/с';
+    var s = new Speedtest();
+
+    s.onupdate = function(data) {
+      document.getElementById("download").textContent = (data.download || 0).toFixed(2);
+      document.getElementById("upload").textContent = (data.upload || 0).toFixed(2);
+      document.getElementById("ping").textContent = (data.ping || 0).toFixed(2);
+    };
+
+    function startTest() {
+      s.start();
     }
 
     function sendResults() {
       var results = {
-        download: document.getElementById("download").textContent
+        download: document.getElementById("download").textContent,
+        upload: document.getElementById("upload").textContent,
+        ping: document.getElementById("ping").textContent
       };
       Telegram.WebApp.sendData(JSON.stringify(results)); // Отправка данных обратно в Telegram бота
     }
   </script>
-</head>
-<body>
-  <h1>Проверка скорости от Fast.com</h1>
-  <button onclick="startTest()">Начать тест</button>
-  <div id="results">
-    <p>Скорость скачивания: <span id="download">-</span></p>
-  </div>
-  <button onclick="sendResults()">Отправить данные боту</button>
 </body>
 </html>
