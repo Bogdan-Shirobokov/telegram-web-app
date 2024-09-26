@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тест скорости интернета</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
+    #results { margin-top: 20px; }
+  </style>
+  <!-- Скачайте и подключите локальную версию speedtest.js -->
+  <script src="speedtest.js"></script>
+</head>
+<body>
+  <h1>Проверка скорости интернета</h1>
+  <button onclick="startTest()">Начать тест</button>
+  <div id="results">
+    <p>Скорость скачивания: <span id="download">-</span> Мбит/с</p>
+    <p>Скорость загрузки: <span id="upload">-</span> Мбит/с</p>
+    <p>Пинг: <span id="ping">-</span> мс</p>
+  </div>
+  <button onclick="sendResults()">Отправить данные боту</button>
+  
+  <script>
+    // Настройка сервера для теста (публичный сервер LibreSpeed)
+    var s = new Speedtest();
+    s.setServer({
+      name: "LibreSpeed Public Server",
+      server: "https://librespeed.org/",
+      dlURL: "garbage.php",  // Для теста скачивания
+      ulURL: "empty.php",    // Для теста загрузки
+      pingURL: "empty.php",   // Для пинга
+      getIpURL: "getIP.php"   // Получение IP
+    });
+
+    s.onupdate = function(data) {
+      document.getElementById("download").textContent = (data.download || 0).toFixed(2);
+      document.getElementById("upload").textContent = (data.upload || 0).toFixed(2);
+      document.getElementById("ping").textContent = (data.ping || 0).toFixed(2);
+    };
+
+    function startTest() {
+      s.start();
+    }
+
+    function sendResults() {
+      var results = {
+        download: document.getElementById("download").textContent,
+        upload: document.getElementById("upload").textContent,
+        ping: document.getElementById("ping").textContent
+      };
+      Telegram.WebApp.sendData(JSON.stringify(results)); // Отправка данных обратно в Telegram бота
+    }
+  </script>
+</body>
+</html>
