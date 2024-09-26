@@ -1,46 +1,47 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Простой Telegram Web App</title>
-    <!-- Подключаем библиотеку Telegram Web Apps -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding-top: 50px;
-        }
-        h1 {
-            color: #333;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            margin-top: 20px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Проверка скорости</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
+    #results { margin-top: 20px; }
+  </style>
+  <script src="https://librespeed.org/librespeed/speedtest.js"></script>
 </head>
 <body>
-    <h1>Привет, это Telegram Web App!</h1>
-    <p>Ваше имя: <span id="username">Неизвестно</span></p>
-    <button onclick="sendMessage()">Отправить сообщение боту</button>
+  <h1>Тест скорости интернета</h1>
+  <button onclick="startTest()">Начать тест</button>
+  <div id="results">
+    <p>Скорость скачивания: <span id="download">-</span> Мбит/с</p>
+    <p>Скорость загрузки: <span id="upload">-</span> Мбит/с</p>
+    <p>Пинг: <span id="ping">-</span> мс</p>
+  </div>
+  <button onclick="sendResults()">Отправить данные боту</button>
+  
+  <script>
+    var s = new Speedtest();
 
-    <script>
-        // Инициализируем объект WebApp
-        const tg = window.Telegram.WebApp;
+    s.onupdate = function(data) {
+      document.getElementById("download").textContent = (data.download || 0).toFixed(2);
+      document.getElementById("upload").textContent = (data.upload || 0).toFixed(2);
+      document.getElementById("ping").textContent = (data.ping || 0).toFixed(2);
+    };
 
-        // Получаем информацию о пользователе
-        const user = tg.initDataUnsafe.user;
+    function startTest() {
+      s.start();
+    }
 
-        // Отображаем имя пользователя
-        if (user) {
-            document.getElementById('username').textContent = user.first_name;
-        }
-
-        // Функция для отправки данных боту
-        function sendMessage() {
-            tg.sendData("Привет от Web App!"); // Отправляем данные боту
-        }
-    </script>
+    function sendResults() {
+      var results = {
+        download: document.getElementById("download").textContent,
+        upload: document.getElementById("upload").textContent,
+        ping: document.getElementById("ping").textContent
+      };
+      Telegram.WebApp.sendData(JSON.stringify(results)); // Отправка данных обратно в Telegram бота
+    }
+  </script>
 </body>
 </html>
+
