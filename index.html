@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Простой Telegram Web App</title>
+    <!-- Подключаем библиотеку Telegram Web Apps -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 50px;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Привет, это Telegram Web App!</h1>
+    <p>Ваше имя: <span id="username">Неизвестно</span></p>
+    <button onclick="sendMessage()">Отправить сообщение боту</button>
+
+    <script>
+        // Инициализируем объект WebApp
+        const tg = window.Telegram.WebApp;
+
+        // Получаем информацию о пользователе
+        const user = tg.initDataUnsafe.user;
+
+        // Отображаем имя пользователя
+        if (user) {
+            document.getElementById('username').textContent = user.first_name;
+        }
+
+        // Функция для отправки данных боту
+        function sendMessage() {
+            tg.sendData("Привет от Web App!"); // Отправляем данные боту
+        }
+    </script>
+</body>
+</html>
