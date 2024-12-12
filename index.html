@@ -3,23 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Игра "Крестики-нолики"</title>
+  <title>Игры</title>
   <style>
     body {
       font-family: 'Arial', sans-serif;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
       height: 100vh;
       margin: 0;
       background-color: #f5f5f5;
+      padding: 20px;
     }
     h1 {
       font-size: 36px;
       color: #333;
       margin-bottom: 20px;
+      text-align: center;
     }
+    .screen { display: none; }
+    .active { display: block; }
+    .game-button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 18px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .game-button:hover {
+      background-color: #0056b3;
+    }
+
+    /* Стили для крестиков-ноликов */
     .grid {
       display: grid;
       grid-template-columns: repeat(3, 100px);
@@ -65,40 +85,71 @@
       padding: 10px;
       font-size: 18px;
     }
+
+    /* Стили для RPS */
+    #rps-game button {
+      margin: 10px;
+      padding: 10px 20px;
+    }
+    #rps-result {
+      margin-top: 20px;
+      font-size: 24px;
+      color: #555;
+    }
   </style>
 </head>
 <body>
-  <h1>Игра "Крестики-нолики"</h1>
+  <h1>Игровое меню</h1>
 
-  <label for="difficulty">Выберите уровень сложности:</label>
-  <select id="difficulty">
-    <option value="easy">Легкий</option>
-    <option value="medium">Средний</option>
-    <option value="hard">Сложный</option>
-  </select>
-
-  <div class="grid" id="grid">
-    <div class="cell" id="cell-0" onclick="makeMove(0)"></div>
-    <div class="cell" id="cell-1" onclick="makeMove(1)"></div>
-    <div class="cell" id="cell-2" onclick="makeMove(2)"></div>
-    <div class="cell" id="cell-3" onclick="makeMove(3)"></div>
-    <div class="cell" id="cell-4" onclick="makeMove(4)"></div>
-    <div class="cell" id="cell-5" onclick="makeMove(5)"></div>
-    <div class="cell" id="cell-6" onclick="makeMove(6)"></div>
-    <div class="cell" id="cell-7" onclick="makeMove(7)"></div>
-    <div class="cell" id="cell-8" onclick="makeMove(8)"></div>
+  <div id="main-menu" class="screen active">
+    <h2>Выберите игру:</h2>
+    <button class="game-button" onclick="showTicTacToe()">Крестики-нолики</button>
+    <button class="game-button" onclick="showRPSGame()">Камень, ножницы, бумага</button>
   </div>
 
-  <div class="message" id="message">Ход X</div>
+  <div id="tictactoe" class="screen">
+    <h1>Игра "Крестики-нолики"</h1>
+    <label for="difficulty">Выберите уровень сложности:</label>
+    <select id="difficulty">
+      <option value="easy">Легкий</option>
+      <option value="medium">Средний</option>
+      <option value="hard">Сложный</option>
+    </select>
 
-  <button onclick="resetGame()">Начать заново</button>
-  <button onclick="sendResults()">Отправить результат боту</button>
-  
+    <div class="grid" id="grid">
+      <div class="cell" id="cell-0" onclick="makeMove(0)"></div>
+      <div class="cell" id="cell-1" onclick="makeMove(1)"></div>
+      <div class="cell" id="cell-2" onclick="makeMove(2)"></div>
+      <div class="cell" id="cell-3" onclick="makeMove(3)"></div>
+      <div class="cell" id="cell-4" onclick="makeMove(4)"></div>
+      <div class="cell" id="cell-5" onclick="makeMove(5)"></div>
+      <div class="cell" id="cell-6" onclick="makeMove(6)"></div>
+      <div class="cell" id="cell-7" onclick="makeMove(7)"></div>
+      <div class="cell" id="cell-8" onclick="makeMove(8)"></div>
+    </div>
+
+    <div class="message" id="message">Ход X</div>
+
+    <button onclick="resetGame()">Начать заново</button>
+    <button onclick="sendResults()">Отправить результат боту</button>
+    <button onclick="showMainMenu()">Вернуться в меню</button>
+  </div>
+
+  <div id="rps-game" class="screen">
+    <h1>Камень, ножницы, бумага</h1>
+    <p>Выберите ваш ход:</p>
+    <button onclick="playRPS('rock')">Камень</button>
+    <button onclick="playRPS('paper')">Бумага</button>
+    <button onclick="playRPS('scissors')">Ножницы</button>
+    <div id="rps-result"></div>
+    <button onclick="showMainMenu()">Вернуться в меню</button>
+  </div>
+
   <script>
     let board = ['', '', '', '', '', '', '', '', ''];
     let currentPlayer = 'X';
     let gameActive = true;
-    let opponent = 'O'; // ИИ будет играть за "O"
+    let opponent = 'O';
 
     const winConditions = [
       [0, 1, 2],
@@ -111,6 +162,24 @@
       [2, 4, 6]
     ];
 
+    function showMainMenu() {
+      document.getElementById('main-menu').classList.add('active');
+      document.getElementById('tictactoe').classList.remove('active');
+      document.getElementById('rps-game').classList.remove('active');
+    }
+
+    function showTicTacToe() {
+      document.getElementById('main-menu').classList.remove('active');
+      document.getElementById('tictactoe').classList.add('active');
+      document.getElementById('rps-game').classList.remove('active');
+    }
+
+    function showRPSGame() {
+      document.getElementById('main-menu').classList.remove('active');
+      document.getElementById('tictactoe').classList.remove('active');
+      document.getElementById('rps-game').classList.add('active');
+    }
+
     function makeMove(index) {
       if (board[index] === '' && gameActive) {
         board[index] = currentPlayer;
@@ -119,7 +188,7 @@
         if (gameActive && currentPlayer === 'X') {
           currentPlayer = 'O';
           document.getElementById('message').textContent = `Ход ${currentPlayer}`;
-          setTimeout(makeAIMove, 500); // ИИ делает ход через 500мс
+          setTimeout(makeAIMove, 500);
         }
       }
     }
@@ -161,10 +230,9 @@
 
     function sendResults() {
       let result = document.getElementById('message').textContent;
-      Telegram.WebApp.sendData(result); // Отправка результата боту
+      Telegram.WebApp.sendData(result);
     }
 
-    // Ходы ИИ в зависимости от уровня сложности
     function makeAIMove() {
       const difficulty = document.getElementById('difficulty').value;
       let move;
@@ -182,7 +250,9 @@
         document.getElementById(`cell-${move}`).textContent = opponent;
         checkWinner();
         currentPlayer = 'X';
-        document.getElementById('message').textContent = `Ход ${currentPlayer}`;
+        if (gameActive) {
+          document.getElementById('message').textContent = `Ход ${currentPlayer}`;
+        }
       }
     }
 
@@ -192,7 +262,6 @@
     }
 
     function getMediumMove() {
-      // Стратегия среднего уровня: блокировать ход игрока или сделать случайный ход
       for (let i = 0; i < winConditions.length; i++) {
         const [a, b, c] = winConditions[i];
         if (board[a] === 'X' && board[b] === 'X' && board[c] === '') return c;
@@ -203,7 +272,6 @@
     }
 
     function getBestMove() {
-      // Алгоритм минимакс для сложного уровня
       const bestMove = minimax(board, opponent);
       return bestMove.index;
     }
@@ -258,6 +326,42 @@
       }
       return false;
     }
+
+    // Логика RPS
+    function playRPS(move) {
+      // Ходы: rock/paper/scissors
+      const aiMoves = ['rock', 'paper', 'scissors'];
+      const aiMove = aiMoves[Math.floor(Math.random() * 3)];
+
+      let resultText;
+      if (move === aiMove) {
+        resultText = `Ничья! Вы оба выбрали ${translateMove(move)}.`;
+      } else if (
+        (move === 'rock' && aiMove === 'scissors') ||
+        (move === 'paper' && aiMove === 'rock') ||
+        (move === 'scissors' && aiMove === 'paper')
+      ) {
+        resultText = `Вы выиграли! Вы выбрали ${translateMove(move)}, AI выбрал ${translateMove(aiMove)}.`;
+        // Отправим результат боту
+        Telegram.WebApp.sendData("RPS Win");
+      } else {
+        resultText = `Вы проиграли! Вы выбрали ${translateMove(move)}, AI выбрал ${translateMove(aiMove)}.`;
+      }
+
+      document.getElementById('rps-result').textContent = resultText;
+    }
+
+    function translateMove(move) {
+      if (move === 'rock') return 'Камень';
+      if (move === 'paper') return 'Бумага';
+      if (move === 'scissors') return 'Ножницы';
+    }
+
+    window.addEventListener('load', () => {
+      if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+        Telegram.WebApp.ready();
+      }
+    });
   </script>
 </body>
 </html>
